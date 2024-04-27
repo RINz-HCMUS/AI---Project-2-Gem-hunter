@@ -93,20 +93,35 @@ def ouput(list_result, grid, size):
                 output[r][c] = 'G'
     return output
 
+def read_input_file(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        size = tuple(map(int, lines[0].strip().split()))
+        grid = []
+        for line in lines[1:]:
+            row = line.strip().split(',')
+            row = [int(cell) if cell != '_' else '_' for cell in row]
+            grid.append(row)
+        return size, grid
 
-size = 3,4
-grid = [
-    [2, '_', 2, '_'],
-    ['_', '_', 2, '_'],
-    ['_', 3, 1, '_']
-]
+def main():
+    # Đường dẫn đến file input
+    file_path = "map/big_guy.txt"  
+    
+    # Đọc file input
+    size, grid = read_input_file(file_path)
+    
+    # Giải bài toán
+    result, flat_grid = solve(grid, size)
+    
+    # Xuất kết quả
+    if result is not None:
+        output_grid = output(result, flat_grid, size)
+        for row in output_grid:
+            print(row)
+    else:
+        print("No solution found.")
 
-num_r, num_c = size
-clauses = [generate_CNF((r, c), grid, size) for r in range(num_r) for c in range(num_c)]
-
-print(clauses)
-
-result = ouput(solve_by_pysat(grid,size), grid,size)
-for row in result:
-    print(row)
-
+# Hàm main sẽ được gọi khi chạy chương trình
+if __name__ == "__main__":
+    main()

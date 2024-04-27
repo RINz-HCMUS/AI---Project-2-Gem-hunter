@@ -76,7 +76,6 @@ def solve(grid, size):
     result = solve_SAT(num_variables, clauses)
     return result, flat_grid
 
-
 def SAT_solver(variables, clauses, assignment):
     if not clauses:
         return assignment
@@ -136,19 +135,36 @@ def output(result, flat_grid, size):
             output_grid.append(row)
     return output_grid
 
+def read_input_file(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        size = tuple(map(int, lines[0].strip().split()))
+        grid = []
+        for line in lines[1:]:
+            row = line.strip().split(',')
+            row = [int(cell) if cell != '_' else '_' for cell in row]
+            grid.append(row)
+        return size, grid
 
+def main():
+    # Đường dẫn đến file input
+    file_path = "map/big_guy.txt"  
+    
+    # Đọc file input
+    size, grid = read_input_file(file_path)
+    
+    # Giải bài toán
+    result, flat_grid = solve(grid, size)
+    
+    # Xuất kết quả
+    if result is not None:
+        output_grid = output(result, flat_grid, size)
+        for row in output_grid:
+            print(row)
+    else:
+        print("No solution found.")
 
-size = 3, 4
-grid = [
-    [2, '_', 2, '_'],
-    ['_', '_', 2, '_'],
-    ['_', 3, 1, '_']
-]
+# Hàm main sẽ được gọi khi chạy chương trình
+if __name__ == "__main__":
+    main()
 
-result, flat_grid = solve(grid, size)
-if result is not None:
-    output_grid = output(result, flat_grid, size)
-    for row in output_grid:
-        print(row)
-else:
-    print("No solution found.")
