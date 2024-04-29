@@ -2,6 +2,7 @@ from tkinter import*
 from sovle_by_none_lib import*
 import os
 import time
+from datetime import datetime
 
 class GUI:
     def __init__(self, window):
@@ -32,13 +33,11 @@ class GUI:
         self.back_ground.place(x=0, y=0, relheight=1, relwidth=1)
 
         # Vẽ các nút bắt đầu và kết thúc
-        self.start_button = Button(self.window, font=("Courier New", 40, "bold"), text="START", 
-                                   bg="#192847", fg="white", command=self.show_levels)
+        self.start_button = Button(self.window, font=("Courier New", 40, "bold"), text="START",bg="#192847", fg="white", command=self.show_levels)
         self.start_button.place(x=370, y=270, width=300, height=100)
 
         # Nút kết thúc
-        self.exit_button = Button(self.window, font=("Courier New", 40, "bold"), text="EXIT", 
-                                  bg="#192847", fg="white", command=self.exit_window)
+        self.exit_button = Button(self.window, font=("Courier New", 40, "bold"), text="EXIT", bg="#192847", fg="white", command=self.exit_window)
         self.exit_button.place(x=370, y=380, width=300, height=100)
 
         # Tạo các danh sách
@@ -50,13 +49,14 @@ class GUI:
         self.transfer_speed = 5
         self.size_cell = 0
 
-        for i in range(5):
-            level_button = Button(self.window, font=("Courier New", 35, "bold"), text="LEVEL {}".format(i+1), 
-                                  bg="#192847", fg="white", command=lambda level=i+1: self.show_maps(level))
-            self.level_buttons.append(level_button)
+        # Biến lưu trạng thái chạy thuật toán
+        self.is_running = False
+        self.start_time = 0
 
-    def GUI_in_game(self):
-        print("In game function")
+
+        for i in range(5):
+            level_button = Button(self.window, font=("Courier New", 35, "bold"), text="LEVEL {}".format(i+1),bg="#192847", fg="white", command=lambda level=i+1: self.show_maps(level))
+            self.level_buttons.append(level_button)
 
     def set_background_board(self):
         # Tạo label hiển thị background 
@@ -87,7 +87,6 @@ class GUI:
     def draw_board_game(self):
         print("Draw board in Game")
         self.set_background_board()
-        # time.sleep(1)
         
     def board(self):
         row, col = self.size
@@ -100,31 +99,51 @@ class GUI:
 
         for i in range(row):
             for j in range(col):
-                if (isinstance(self.grid[i][j], int)):
-                    color = "#547FAF"
+                if (isinstance(self.grid[i][j], int)): color = "#547FAF"
                 else: color = "#EBE0EA"
 
                 # Tạo label cho ô vuông với nền màu xám và viền màu đen
-                button = Button(self.window, font=("Courier New", 10, "bold"), text=str(self.grid[i][j]), 
-                                bg=color, fg="white")
-                self.box_maps.append(button)
+                button = Button(self.window, font=("Courier New", 10, "bold"), text=str(self.grid[i][j]), bg=color, fg="white")
                 button.place(x=self.start_x + self.size_cell * i, y= self.start_y + self.size_cell * j, width=self.size_cell, height=self.size_cell)
+                self.box_maps.append(button)
 
         # Vẽ nút giải
-        self.button_solve = Button(self.window, font=("Courier New", 14, "bold"), text="SOLVE", 
-                                bg="grey", fg="white", command=self.board_solved)
-        self.button_solve.place(x=width//2 - 50, y=height - 80, width=self.size_cell * 3, height=self.size_cell)
+        self.button_solve = Button(self.window, font=("Courier New", 20, "bold"), text="SOLVE", bg="grey", fg="white", command=self.board_solved)
+        self.button_solve.place(x=width//2 - 50, y=height - 80, width=self.size_cell * 4, height=self.size_cell * 2)
+
+        self.button_menu = Button(self.window, font=("Courier New", 20, "bold"), text="MENU", bg="grey", fg="white", command=self.menu_button)
+        self.button_menu.pack()
+
+        # Hiển thị bộ đếm thời gian
+        self.timer_label = Label(self.window, text="00:00:000", font=("Courier New", 18, "bold"))
+        self.timer_label.pack()
+        
+    def menu_button(self):
+        self.window.destroy()
+        main()
+
+    def update_timer(self):
+        current_time = datetime.now()
+        elapsed_time = current_time - self.start_time
+        milliseconds = int(elapsed_time.total_seconds() * 1000)
+        time_str = "{:02d}:{:02d}:{:03d}".format((milliseconds // 60000) % 60, (milliseconds // 1000) % 60, milliseconds % 1000)
+        self.timer_label.config(text=time_str)
 
     def board_solved(self):
         # Xóa các vị trí cũ
-        row, col = self.size
         for element in self.box_maps:
             element.place_forget()
         self.box_maps.clear
+        row, col = self.size
+
+        # Bắt đầu đếm thời gian
+        self.start_time = datetime.now()
 
         # Giải bài toán
         result, flat_grid = solve(self.grid, self.size)
+        self.update_timer()
         
+
         # Xuất kết quả
         if result is not None:
             self.output_grid = output(result, flat_grid, self.size)
@@ -133,35 +152,36 @@ class GUI:
                     color_text = "white"
                     if (isinstance(self.output_grid[i][j], int)):
                         color = "#506465"
-                    elif(self.output_grid[i][j] == "G") : color, color_text = "#EFF2DD", "black"
-                    elif(self.output_grid[i][j] == "T") : color = "#EF6C62"
+                    elif(self.output_grid[i][j] == "G") : 
+                        color, color_text = "#5FCAD8", "#547FAF"
+                    elif(self.output_grid[i][j] == "T") : 
+                        color = "#EF6C62"
+
                     # Tạo label cho ô vuông với nền màu xám và viền màu đen
-                    button = Button(self.window, font=("Courier New", 10, "bold"), text=str(self.output_grid[i][j]), 
-                                    bg=color, fg=color_text)
-                    self.box_maps.append(button)
+                    button = Button(self.window, font=("Courier New", 10, "bold"), text=str(self.output_grid[i][j]), bg=color, fg=color_text)
                     button.place(x=self.start_x + self.size_cell * i, y= self.start_y + self.size_cell * j, width=self.size_cell, height=self.size_cell)
+                    self.box_maps.append(button)
 
         # Nếu không giải được kết quả
         else :
             print("No solution found.")
 
 
-
     def center_window(self, width, height):
         # Lấy chiều rộng và chiều cao của màn hình
-        screen_width = window.winfo_screenwidth()
-        screen_height = window.winfo_screenheight()
+        screen_width = self.window.winfo_screenwidth()
+        screen_height = self.window.winfo_screenheight()
         
         # Tính toán vị trí x và y để đặt cửa sổ vào trung tâm
         x = (screen_width - width) // 2
         y = (screen_height - height) // 2
         
         # Đặt vị trí của cửa sổ
-        window.geometry(f"{width}x{height}+{x}+{y}")
+        self.window.geometry(f"{width}x{height}+{x}+{y}")
 
 # Hàm xử lý khi nhấn vào nút "EXIT"
     def exit_window(self):
-        window.destroy()  # Đóng cửa sổ
+        self.window.destroy()  # Đóng cửa sổ
 
     # Hàm xử lý sự kiện nút bắt đầu
     def show_levels(self):
@@ -212,16 +232,19 @@ class GUI:
 
         self.draw_board_game()
 
+def main():
+    #  Tạo cửa sổ bắt đầu
+    window = Tk()
 
+    # Gọi Class GUI
+    Gui = GUI(window)
 
-#  Tạo cửa sổ bắt đầu
-window = Tk()
+    # Gọi vòng lặp - vòng lặp này giúp cho cửa sổ được hiển thị liên tục
+    window.mainloop()
 
-# Gọi Class GUI
-Gui = GUI(window)
-
-# Gọi vòng lặp - vòng lặp này giúp cho cửa sổ được hiển thị liên tục
-window.mainloop()
+# Hàm main sẽ được gọi khi chạy chương trình
+if __name__ == "__main__":
+    main()
 
 
 
