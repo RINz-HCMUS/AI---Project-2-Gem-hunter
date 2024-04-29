@@ -75,7 +75,7 @@ def output_for_algorithm_optimal(result, flat_grid, size):
                     if variable in result:
                         row.append('T' if result[variable] else 'G')
                     else:
-                        row.append('_')
+                        row.append('G')
             output_grid.append(row)
     return output_grid
 

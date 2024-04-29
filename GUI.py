@@ -1,5 +1,8 @@
 from tkinter import*
 from OptimalAlgorithm import*
+from PysatSupport import*
+from Backtracking import*
+from Brute_Force import*
 import os
 import time
 from datetime import datetime
@@ -104,12 +107,12 @@ class GUI:
 
                 # Tạo label cho ô vuông với nền màu xám và viền màu đen
                 button = Button(self.window, font=("Courier New", 10, "bold"), text=str(self.grid[i][j]), bg=color, fg="white")
-                button.place(x=self.start_x + self.size_cell * i, y= self.start_y + self.size_cell * j, width=self.size_cell, height=self.size_cell)
+                button.place(x=self.start_x + self.size_cell * j, y=  self.start_y + self.size_cell * i, width=self.size_cell, height=self.size_cell)
                 self.box_maps.append(button)
 
         # Vẽ nút giải
         self.button_solve = Button(self.window, font=("Courier New", 20, "bold"), text="SOLVE", bg="grey", fg="white", command=self.board_solved)
-        self.button_solve.place(x=width//2 - 50, y=height - 80, width=self.size_cell * 4, height=self.size_cell * 2)
+        self.button_solve.place(x=width//2 - 50, y=height - 80, width=100, height=50)
 
         self.button_menu = Button(self.window, font=("Courier New", 20, "bold"), text="MENU", bg="grey", fg="white", command=self.menu_button)
         self.button_menu.pack()
@@ -140,13 +143,11 @@ class GUI:
         self.start_time = datetime.now()
 
         # Giải bài toán
-        result, flat_grid = solve_with_optimal_algorithm(self.grid, self.size)
+        self.output_grid = Backtracking_Solution(self.grid, self.size)
         self.update_timer()
         
-
         # Xuất kết quả
-        if result is not None:
-            self.output_grid = output_for_algorithm_optimal(result, flat_grid, self.size)
+        if self.output_grid is not None:
             for i in range(row):
                 for j in range(col):
                     color_text = "white"
@@ -159,7 +160,7 @@ class GUI:
 
                     # Tạo label cho ô vuông với nền màu xám và viền màu đen
                     button = Button(self.window, font=("Courier New", 10, "bold"), text=str(self.output_grid[i][j]), bg=color, fg=color_text)
-                    button.place(x=self.start_x + self.size_cell * i, y= self.start_y + self.size_cell * j, width=self.size_cell, height=self.size_cell)
+                    button.place(x=self.start_x + self.size_cell * j, y= self.start_y + self.size_cell * i, width=self.size_cell, height=self.size_cell)
                     self.box_maps.append(button)
 
         # Nếu không giải được kết quả
