@@ -136,15 +136,33 @@ def output(result, flat_grid, size):
     return output_grid
 
 def read_input_file(file_path):
+    # Mở tập tin và đọc nội dung
     with open(file_path, 'r') as file:
         lines = file.readlines()
-        size = tuple(map(int, lines[0].strip().split()))
-        grid = []
-        for line in lines[1:]:
-            row = line.strip().split(',')
-            row = [int(cell) if cell != '_' else '_' for cell in row]
-            grid.append(row)
-        return size, grid
+    
+    # Lấy kích thước của ma trận từ dòng đầu tiên và chuyển đổi thành tuple
+    size = tuple(map(int, lines[0].strip().split()))
+
+    # Khởi tạo ma trận
+    grid = []
+    
+    # Đọc dữ liệu từ dòng thứ hai trở đi và xây dựng ma trận
+    for line in lines[1:]:
+        # Tách các phần tử trong dòng bằng dấu phẩy
+        row = line.strip().split(',')
+        # Xử lý từng phần tử trong dòng
+        new_row = []
+        for cell in row:
+            if cell != '_':
+                new_row.append(int(cell))
+            else:
+                new_row.append('_')
+        # Thêm hàng mới vào ma trận
+        grid.append(new_row)
+
+    # Trả về kích thước và ma trận đã xây dựng
+    return size, grid
+
 
 def main():
     # Đường dẫn đến file input
@@ -160,7 +178,9 @@ def main():
     if result is not None:
         output_grid = output(result, flat_grid, size)
         for row in output_grid:
-            print(row)
+            for element in row:
+                print(element, end="|")
+            print("")
     else:
         print("No solution found.")
 
