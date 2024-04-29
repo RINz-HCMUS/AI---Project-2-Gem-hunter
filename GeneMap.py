@@ -78,7 +78,7 @@ class MinesweeperEditor:
 
     def toggle_cell(self, row, col):
         if self.buttons[row][col]['text'] == '_':
-            self.buttons[row][col].config(text='B', bg='black')
+            self.buttons[row][col].config(text='T', bg='black')
         else:
             self.buttons[row][col].config(text='_', bg='white')
 
@@ -88,8 +88,8 @@ class MinesweeperEditor:
 
         for r in range(self.rows):
             for c in range(self.cols):
-                if self.buttons[r][c]['text'] == 'B':
-                    self.board[r][c] = 'B'
+                if self.buttons[r][c]['text'] == 'T':
+                    self.board[r][c] = 'T'
         
         self.calculate_numbers()
 
@@ -108,19 +108,19 @@ class MinesweeperEditor:
         # Calculate
         for r in range(self.rows):
             for c in range(self.cols):
-                if self.board[r][c] != 'B':
+                if self.board[r][c] != 'T':
                     count = 0
                     for dr in [-1, 0, 1]:
                         for dc in [-1, 0, 1]:
                             nr, nc = r + dr, c + dc
-                            if 0 <= nr < self.rows and 0 <= nc < self.cols and self.board[nr][nc] == 'B':
+                            if 0 <= nr < self.rows and 0 <= nc < self.cols and self.board[nr][nc] == 'T':
                                 count += 1
                     self.board[r][c] = str(count)
         
         # Encode the board
         for r in range(self.rows):
             for c in range(self.cols):
-                if self.board[r][c] == 'B' or self.board[r][c] == '0':
+                if self.board[r][c] == 'T' or self.board[r][c] == '0':
                     self.board[r][c] = '_'       
 
 def main():
