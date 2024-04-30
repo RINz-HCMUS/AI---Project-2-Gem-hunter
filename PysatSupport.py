@@ -28,8 +28,11 @@ def is_valid(pos, grid, size):
     return 0 <= r < num_r and 0 <= c < num_c and grid[r][c] == '_'  
 
 def list_combination(n, k):
+    if k > n:
+        return []
     comb_list = list(combinations(range(1, n + 1), k))
     return comb_list
+
 
 def generate_CNF(pos, grid, size):
     if grid[pos[0]][pos[1]] == '_':
@@ -41,7 +44,8 @@ def generate_CNF(pos, grid, size):
             list_cells.append(convert_to_flatten(new_pos, size))
     
     
-    number = grid[pos[0]][pos[1]]
+    number = int(grid[pos[0]][pos[1]])
+
     num_valid = len(list_cells)
     clauses = []
     
@@ -95,21 +99,6 @@ def ouput_for_pysat(list_result, grid, size):
             else:
                 output[r][c] = 'G'
     return output
-
-def ouput_for_pysat(list_result, grid, size):
-    output = grid.copy()
-    num_r, num_c = size
-    for r in range(num_r):
-        for c in range(num_c):
-            if output[r][c] != '_':
-                continue
-            index = r * num_c + c
-            if index < len(list_result) and list_result[index] > 0:
-                output[r][c] = 'T'
-            else:
-                output[r][c] = 'G'
-    return output
-
 
 def read_input_file(file_path):
     try:

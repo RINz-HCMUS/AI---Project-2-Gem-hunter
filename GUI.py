@@ -56,6 +56,12 @@ class GUI:
         self.is_running = False
         self.start_time = 0
 
+        # Lưu thông số thống kê chạy thuật toán của từng loại
+        self.time_for_optimal_algorithm = 0
+        self.time_for_pysat_lib = 0
+        self.time_for_brute_force = 0
+        self.time_for_backtracking = 0
+
 
         for i in range(5):
             level_button = Button(self.window, font=("Courier New", 35, "bold"), text="LEVEL {}".format(i+1),bg="#192847", fg="white", command=lambda level=i+1: self.show_maps(level))
@@ -93,12 +99,12 @@ class GUI:
         
     def board(self):
         row, col = self.size
-    
-        width = self.window.winfo_width()
-        height = self.window.winfo_height()
-        self.size_cell = (min(width, height) - 200) // row
-        self.start_x = (width - self.size_cell * row) // 2
-        self.start_y = (height - self.size_cell * row) // 2
+
+        self.width = self.window.winfo_width()
+        self.height = self.window.winfo_height()
+        self.size_cell = (min(self.width, self.height) - 200) // row
+        self.start_x = (self.width - self.size_cell * row) // 2
+        self.start_y = (self.height - self.size_cell * row) // 2
 
         for i in range(row):
             for j in range(col):
@@ -112,10 +118,10 @@ class GUI:
 
         # Vẽ nút giải
         self.button_solve = Button(self.window, font=("Courier New", 20, "bold"), text="SOLVE", bg="grey", fg="white", command=self.board_solved)
-        self.button_solve.place(x=width//2 - 50, y=height - 80, width=100, height=50)
+        self.button_solve.place(x=self.width//2 - 50, y=self.height - 80, width=100, height=50)
 
         self.button_menu = Button(self.window, font=("Courier New", 20, "bold"), text="MENU", bg="grey", fg="white", command=self.menu_button)
-        self.button_menu.pack()
+        self.button_menu.pack(padx=5, pady=5)
 
         # Hiển thị bộ đếm thời gian
         self.timer_label = Label(self.window, text="00:00:000", font=("Courier New", 18, "bold"))
@@ -126,12 +132,17 @@ class GUI:
         self = None
         main()
 
+    def format_timer(self, elapsed_time):
+        milliseconds = int(elapsed_time.total_seconds() * 1000)
+        time_str = "{:02d}:{:02d}:{:03d}".format((milliseconds // 60000) % 60, (milliseconds // 1000) % 60, milliseconds % 1000)
+        return time_str
+    
     def update_timer(self):
         current_time = datetime.now()
         elapsed_time = current_time - self.start_time
-        milliseconds = int(elapsed_time.total_seconds() * 1000)
-        time_str = "{:02d}:{:02d}:{:03d}".format((milliseconds // 60000) % 60, (milliseconds // 1000) % 60, milliseconds % 1000)
+        time_str = self.format_timer(elapsed_time)
         self.timer_label.config(text=time_str)
+        self.time_for_pysat_lib = time_str # Lưu lại thông số thời gian xử lý
 
     def board_solved(self):
         # Xóa các vị trí cũ
@@ -139,13 +150,19 @@ class GUI:
         for element in self.box_maps:
             element.place_forget()
         self.box_maps.clear
-        row, col = self.size
 
+        row, col = self.size
+        grid_pysat = self.grid.copy()
+        grid_optimal = self.grid.copy()
+        grid_backtracking = self.grid.copy()
+        grid_brute = self.grid.copy()
+        # Sử dụng Pysat để minh họa cho kết quả
         # Bắt đầu đếm thời gian
         self.start_time = datetime.now()
 
         # Giải bài toán
-        self.output_grid = Backtracking_Solution(self.grid, self.size)
+        size = self.size
+        self.output_grid = Pysat_Solution(grid_pysat, size)
         self.update_timer()
         
         # Xuất kết quả
@@ -169,7 +186,88 @@ class GUI:
 
         # Nếu không giải được kết quả
         else :
-            print("No solution found.")
+            print("No solution found is returned by Brute_Force_Solution.")
+
+        # Chạy các thuật toán còn lại để so sánh các thông số
+        # Thuật toán chạy bằng Brute_Force
+        size, grid = read_input_file(self.file_name)
+        self.start_time = datetime.now()
+        Brute_Force_Solution(grid.copy(), size)
+        elapsed_time = datetime.now() - self.start_time 
+        self.time_for_brute_force = self.format_timer(elapsed_time)
+
+        # Thuật toán chạy bằng Backtracking DPLL
+        size, grid = read_input_file(self.file_name)
+        self.start_time = datetime.now()
+        Backtracking_Solution(grid.copy(), size)
+        elapsed_time = datetime.now() - self.start_time 
+        self.time_for_backtracking = self.format_timer(elapsed_time)
+
+        # Thuật toán chạy bằng Optimal Algorithm - sử dụng phương pháp Backtracking CDCL, để giải SAT
+        size, grid = read_input_file(self.file_name)
+        self.start_time = datetime.now()
+        Optimal_Algorithm_Solution(grid.copy(), size)
+        elapsed_time = datetime.now() - self.start_time 
+        self.time_for_optimal_algorithm = self.format_timer(elapsed_time)
+
+        self.button_statistic = Button(self.window, font=("Courier New", 20, "bold"), text="STATISTIC", bg="#97D76D", fg="white", command=self.statistic)
+        self.button_statistic.place(x=self.width//2 - 100, y=self.height - 80, width=200, height=60)
+
+    def statistic(self):
+        self.table_frame = Frame(self.window, width=300, height=400)
+        self.table_frame.pack(padx=50, pady=50)
+
+        # Tạo tiêu đề cho các cột
+        self.algorithm_label = Label(self.table_frame, text="Thuật toán", font=("Courier New", 10))
+        self.algorithm_label.grid(row=0, column=0)
+
+        self.map_type_label = Label(self.table_frame, text="Loại map", font=("Courier New", 10))
+        self.map_type_label.grid(row=0, column=1)
+
+        self.processing_time_label = Label(self.table_frame, text="Thời gian xử lý", font=("Courier New", 10))
+        self.processing_time_label.grid(row=0, column=2)
+
+        # Hiển thị thời gian cho thuật toán A
+        self.algorithm_pysat_label = Label(self.table_frame, text="Pysat Library", font=("Courier New", 10))
+        self.algorithm_pysat_label.grid(row=1, column=0)
+
+        self.map_type_pysat_label = Label(self.table_frame, text=self.map_name, font=("Courier New", 10))
+        self.map_type_pysat_label.grid(row=1, column=1)
+
+        self.time_pysat_label = Label(self.table_frame, text=self.time_for_pysat_lib, font=("Courier New", 10))
+        self.time_pysat_label.grid(row=1, column=2)
+
+        # Hiển thị thời gian cho thuật toán B
+        self.algorithm_optimal_label = Label(self.table_frame, text="Optimal", font=("Courier New", 10))
+        self.algorithm_optimal_label.grid(row=2, column=0)
+
+        self.map_type_optimal_label = Label(self.table_frame, text=self.map_name, font=("Courier New", 10))
+        self.map_type_optimal_label.grid(row=2, column=1)
+
+        self.time_optimal_label = Label(self.table_frame, text=self.time_for_optimal_algorithm, font=("Courier New", 10))
+        self.time_optimal_label.grid(row=2, column=2)
+
+        # Hiển thị thời gian cho thuật toán C
+        self.algorithm_backtracking_label = Label(self.table_frame, text="Backtracking", font=("Courier New", 10))
+        self.algorithm_backtracking_label.grid(row=3, column=0)
+
+        self.map_type_backtracking_label = Label(self.table_frame, text=self.map_name, font=("Courier New", 10))
+        self.map_type_backtracking_label.grid(row=3, column=1)
+
+        self.time_backtracking_label = Label(self.table_frame, text=self.time_for_backtracking, font=("Courier New", 10))
+        self.time_backtracking_label.grid(row=3, column=2)
+
+        # Hiển thị thời gian cho thuật toán D
+        self.algorithm_brute_force_label = Label(self.table_frame, text="Brute Force", font=("Courier New", 10))
+        self.algorithm_brute_force_label.grid(row=4, column=0)
+
+        self.map_type_brute_force_label = Label(self.table_frame, text=self.map_name, font=("Courier New", 10))
+        self.map_type_brute_force_label.grid(row=4, column=1)
+
+        self.time_brute_force_label = Label(self.table_frame, text=self.time_for_brute_force, font=("Courier New", 10))
+        self.time_brute_force_label.grid(row=4, column=2)
+
+        self.button_statistic.place_forget()
 
     def center_window(self, width, height):
         # Lấy chiều rộng và chiều cao của màn hình
@@ -211,20 +309,22 @@ class GUI:
         # Hiển thị danh sách các map
         distance = 0
         for map_name in maps:
-            map_button = Button(self.window, font=("Courier New", 18, "bold"), bg="#192847", fg="white", 
-                                text=map_name, command=lambda name=map_folder + "/" + map_name: self.select_map(name))
-            map_button.place(x=370, y=200 + distance, width=300, height=50)
+            map_button = Button(self.window, font=("Courier New", 16, "bold"), bg="#192847", fg="white", 
+                                text=map_name, command=lambda  name=map_folder + "/" + map_name: self.select_map(name, map_name))
+            map_button.place(x=370, y=200 + distance, width=350, height=50)
             distance += 60
 
             self.map_buttons.append(map_button)
         
-    def select_map(self, name):
+    def select_map(self, name, map_name):
+        self.file_name = name
+        self.map_name = map_name
         for button in self.map_buttons:
             button.place_forget()
 
         # Xử lý việc chọn map
-        print("Selected map:", name)
-        self.size, self.grid = read_input_file(name)
+        print("Selected map:", self.file_name)
+        self.size, self.grid = read_input_file(self.file_name)
         self.print_initial_map()
 
     def print_initial_map(self):

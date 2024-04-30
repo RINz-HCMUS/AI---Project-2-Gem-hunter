@@ -37,26 +37,6 @@ def unit_propagate(formula, assignments):
         formula = [c for c in formula if unit_clause not in c]
     return formula, assignments
 
-# def dpll(formula, assignments=set()):
-#     stack = [(formula, assignments)]
-#     while stack:
-#         formula, assignments = stack.pop()
-#         formula, assignments = unit_propagate(formula, assignments)
-#         if any(not clause for clause in formula):
-#             continue
-#         if not formula:
-#             return True, assignments
-#         unassigned_literals = set()
-#         for clause in formula:
-#             unassigned_literals.update(literal for literal in clause if literal not in assignments and -literal not in assignments)
-#         if not unassigned_literals:
-#             continue
-#         literal = unassigned_literals.pop()
-#         stack.append(([clause for clause in formula if literal not in clause], assignments.union({literal})))
-#         stack.append(([clause for clause in formula if -literal not in clause], assignments.union({-literal})))
-#     return False, None
-
-
 # Giải quyết SAT bằng thuật toán DPLL - một phiên bản của backtracking
 def dpll_iterative(formula):
     stack = [(formula, set())]
