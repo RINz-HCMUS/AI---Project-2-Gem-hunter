@@ -1,5 +1,14 @@
-
 def Brute_Force_Solution(grid, size):
+    """
+    Solves the Minesweeper game using a brute force approach.
+
+    Args:
+        grid (list of lists): The grid representing the Minesweeper game.
+        size (tuple): A tuple containing the number of rows and columns in the grid.
+
+    Returns:
+        list of lists: The solution grid with 'T' for traps and 'G' for gems.
+    """
     rows, cols = size
     solution = [[cell for cell in row] for row in grid]
 
@@ -10,7 +19,7 @@ def Brute_Force_Solution(grid, size):
         for r in range(rows):
             for c in range(cols):
                 if grid[r][c] == '_':
-                    count = count_adjacent_traps(r, c, grid, size)
+                    count = count_adjacent_bombs(r, c, grid, size)
                     if count > non_zero_count:
                         non_zero_count = count
                         max_r, max_c = r, c
@@ -21,7 +30,7 @@ def Brute_Force_Solution(grid, size):
         grid[max_r][max_c] = 'T'
         solution[max_r][max_c] = 'T'
 
-        decrement_adjacent_traps(max_r, max_c, grid, size)
+        decrement_adjacent_bombs(max_r, max_c, grid, size)
         flag = True
 
         if not flag:
@@ -34,8 +43,19 @@ def Brute_Force_Solution(grid, size):
 
     return solution
 
-# Count the number of adjacent traps around cell (r, c)
-def count_adjacent_traps(r, c, grid, size):
+def count_adjacent_bombs(r, c, grid, size):
+    """
+    Counts the number of adjacent bombs around a given cell in the grid.
+
+    Args:
+        r (int): The row index of the cell.
+        c (int): The column index of the cell.
+        grid (list of lists): The grid representing the Minesweeper game.
+        size (tuple): A tuple containing the number of rows and columns in the grid.
+
+    Returns:
+        int: The count of adjacent bombs.
+    """
     rows, cols = size
     count = 0
     for dr in [-1, 0, 1]:
@@ -55,8 +75,16 @@ def count_adjacent_traps(r, c, grid, size):
                     count += cell
     return count
 
-# Decrement the number of adjacent traps around cell (r, c) when a trap is placed at (r, c)
-def decrement_adjacent_traps(r, c, grid, size):
+def decrement_adjacent_bombs(r, c, grid, size):
+    """
+    Decrements the count of adjacent bombs around a given cell in the grid.
+
+    Args:
+        r (int): The row index of the cell.
+        c (int): The column index of the cell.
+        grid (list of lists): The grid representing the Minesweeper game.
+        size (tuple): A tuple containing the number of rows and columns in the grid.
+    """
     rows, cols = size
     for dr in [-1, 0, 1]:
         for dc in [-1, 0, 1]:

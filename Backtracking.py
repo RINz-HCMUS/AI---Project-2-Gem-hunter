@@ -1,6 +1,17 @@
 from PysatSupport import*
 
 def output_for_backtracking(list_result, grid, size):
+    """
+    Generates the output grid for the Backtracking algorithm solution.
+
+    Args:
+        list_result (list): The list of assigned literals.
+        grid (list of lists): The grid representing the Minesweeper game.
+        size (tuple): A tuple containing the number of rows and columns in the grid.
+
+    Returns:
+        list of lists: The solution grid with 'T' for traps, 'G' for gems, and 'U' for unassigned cells.
+    """
     output = grid.copy()
     num_r, num_c = size
     for r in range(num_r):
@@ -24,6 +35,16 @@ def output_for_backtracking(list_result, grid, size):
     return output
 
 def unit_propagate(formula, assignments):
+    """
+    Propagates unit clauses in the formula.
+
+    Args:
+        formula (list of lists): The formula in conjunctive normal form.
+        assignments (set): A set containing the assigned literals.
+
+    Returns:
+        tuple: A tuple containing the updated formula and assignments after unit propagation.
+    """
     while True:
         unit_clause = None
         for clause in formula:
@@ -37,8 +58,17 @@ def unit_propagate(formula, assignments):
         formula = [c for c in formula if unit_clause not in c]
     return formula, assignments
 
-# Giải quyết SAT bằng thuật toán DPLL - một phiên bản của backtracking
+# Solves SAT using the DPLL algorithm (a version of backtracking)
 def dpll_iterative(formula):
+    """
+    Solves SAT using the DPLL algorithm iteratively.
+
+    Args:
+        formula (list of lists): The formula in conjunctive normal form.
+
+    Returns:
+        tuple: A tuple containing a boolean indicating whether the formula is satisfiable and the assignments if satisfiable.
+    """
     stack = [(formula, set())]
     while stack:
         formula, assignments = stack.pop()
@@ -58,6 +88,16 @@ def dpll_iterative(formula):
     return False, None
 
 def Backtracking_Solution(grid, size):
+    """
+    Solves the Minesweeper game using the Backtracking algorithm.
+
+    Args:
+        grid (list of lists): The grid representing the Minesweeper game.
+        size (tuple): A tuple containing the number of rows and columns in the grid.
+
+    Returns:
+        list of lists: The solution grid with 'T' for traps, 'G' for gems, and 'U' for unassigned cells.
+    """
     rows, cols = size
 
     # Generate CNF
@@ -67,7 +107,7 @@ def Backtracking_Solution(grid, size):
         for item in clause:
             formula.append(item)
 
-    # Solve by using iterative DPLL
+    # Solve using iterative DPLL
     satisfiable, assignments = dpll_iterative(formula)
     if satisfiable and assignments is not None:
         sorted_assignment = sorted(assignments, key=abs)
@@ -75,8 +115,4 @@ def Backtracking_Solution(grid, size):
     else:
         print("Unsatisfiable")
         return None
-
-
-
-
 
