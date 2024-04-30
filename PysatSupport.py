@@ -13,11 +13,14 @@ def convert_to_2D(flat, size):
     r = (flat-1) // num_c
     return r,c
 
-def generate_around(pos):
+def generate_around(pos, size):
     r, c = pos
+    num_r, num_c = size
     for i in range(-1, 2):
         for j in range(-1, 2):
-            yield r + i, c + j
+            new_r, new_c = r + i, c + j
+            if 0 <= new_r < num_r and 0 <= new_c < num_c:
+                yield new_r, new_c
 
 def is_valid(pos, grid, size):
     num_r, num_c = size
@@ -33,7 +36,7 @@ def generate_CNF(pos, grid, size):
         return []
     
     list_cells = []
-    for new_pos in generate_around(pos):
+    for new_pos in generate_around(pos, size):
         if is_valid(new_pos, grid, size):
             list_cells.append(convert_to_flatten(new_pos, size))
     
@@ -87,11 +90,26 @@ def ouput_for_pysat(list_result, grid, size):
             if output[r][c] != '_':
                 continue
             index = r * num_c + c
-            if list_result[index] > 0:
+            if index < len(list_result) and list_result[index] > 0:
                 output[r][c] = 'T'
             else:
                 output[r][c] = 'G'
     return output
+
+def ouput_for_pysat(list_result, grid, size):
+    output = grid.copy()
+    num_r, num_c = size
+    for r in range(num_r):
+        for c in range(num_c):
+            if output[r][c] != '_':
+                continue
+            index = r * num_c + c
+            if index < len(list_result) and list_result[index] > 0:
+                output[r][c] = 'T'
+            else:
+                output[r][c] = 'G'
+    return output
+
 
 def read_input_file(file_path):
     try:
