@@ -1,3 +1,4 @@
+
 def Brute_Force_Solution(grid, size):
     rows, cols = size
     solution = [[cell for cell in row] for row in grid]
@@ -9,7 +10,7 @@ def Brute_Force_Solution(grid, size):
         for r in range(rows):
             for c in range(cols):
                 if grid[r][c] == '_':
-                    count = count_adjacent_bombs(r, c, grid, size)
+                    count = count_adjacent_traps(r, c, grid, size)
                     if count > non_zero_count:
                         non_zero_count = count
                         max_r, max_c = r, c
@@ -20,7 +21,7 @@ def Brute_Force_Solution(grid, size):
         grid[max_r][max_c] = 'T'
         solution[max_r][max_c] = 'T'
 
-        decrement_adjacent_bombs(max_r, max_c, grid, size)
+        decrement_adjacent_traps(max_r, max_c, grid, size)
         flag = True
 
         if not flag:
@@ -33,7 +34,8 @@ def Brute_Force_Solution(grid, size):
 
     return solution
 
-def count_adjacent_bombs(r, c, grid, size):
+# Count the number of adjacent traps around cell (r, c)
+def count_adjacent_traps(r, c, grid, size):
     rows, cols = size
     count = 0
     for dr in [-1, 0, 1]:
@@ -53,7 +55,8 @@ def count_adjacent_bombs(r, c, grid, size):
                     count += cell
     return count
 
-def decrement_adjacent_bombs(r, c, grid, size):
+# Decrement the number of adjacent traps around cell (r, c) when a trap is placed at (r, c)
+def decrement_adjacent_traps(r, c, grid, size):
     rows, cols = size
     for dr in [-1, 0, 1]:
         for dc in [-1, 0, 1]:

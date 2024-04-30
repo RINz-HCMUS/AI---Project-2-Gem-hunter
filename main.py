@@ -7,7 +7,7 @@ from Brute_Force import*
 def main():
     #  Tạo cửa sổ bắt đầu
     window = Tk()
-
+    window.title("Gem Hunter")
     # Gọi Class GUI
     Gui = GUI(window)
 
