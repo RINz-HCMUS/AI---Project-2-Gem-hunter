@@ -3,10 +3,9 @@ from tkinter import messagebox
 import os
 
 """
-Bombs - (black)
+Trap - (black)
 Empty cells or Gems - (white)
 """
-
 class MinesweeperEditor:
     def __init__(self, master):
         self.master = master
@@ -18,24 +17,24 @@ class MinesweeperEditor:
 
         self.create_input_widgets()
     
-    # Create the input widgets
+    # Create GUI
     def create_input_widgets(self):
-        self.rows_label = tk.Label(self.master, text="Số hàng:")
+        self.rows_label = tk.Label(self.master, text="Num of Row:")
         self.rows_label.grid(row=0, column=0)
         self.rows_entry = tk.Entry(self.master)
         self.rows_entry.grid(row=0, column=1)
 
-        self.cols_label = tk.Label(self.master, text="Số cột:")
+        self.cols_label = tk.Label(self.master, text="Num of Column:")
         self.cols_label.grid(row=1, column=0)
         self.cols_entry = tk.Entry(self.master)
         self.cols_entry.grid(row=1, column=1)
 
-        self.file_label = tk.Label(self.master, text="Tên file (bao gồm đuôi .txt):")
+        self.file_label = tk.Label(self.master, text="Filename (Include .txt):")
         self.file_label.grid(row=2, column=0)
         self.file_entry = tk.Entry(self.master)
         self.file_entry.grid(row=2, column=1)
 
-        self.continue_button = tk.Button(self.master, text="Tiếp tục", command=self.create_map)
+        self.continue_button = tk.Button(self.master, text="Continue", command=self.create_map)
         self.continue_button.grid(row=3, columnspan=2)
 
     # Check & Create the map  
@@ -50,7 +49,7 @@ class MinesweeperEditor:
                 self.file_name += '.txt'
             # Check if the rows and columns are valid
             if self.rows <= 0 or self.cols <= 0:
-                raise ValueError("Kích thước không hợp lệ. Vui lòng nhập lại.")
+                raise ValueError("Invalid values. Please try again.")
             
             # Remove the input widgets
             for widget in (self.rows_label, self.rows_entry, self.cols_label, self.cols_entry, self.file_label, self.file_entry, self.continue_button):
@@ -60,7 +59,7 @@ class MinesweeperEditor:
             self.create_map_widgets()
         
         except ValueError as e:
-            messagebox.showerror("Lỗi", str(e))
+            messagebox.showerror("Error", str(e))
 
     # Create the map widgets
     def create_map_widgets(self):
@@ -78,7 +77,7 @@ class MinesweeperEditor:
 
     def toggle_cell(self, row, col):
         if self.buttons[row][col]['text'] == '_':
-            self.buttons[row][col].config(text='B', bg='black')
+            self.buttons[row][col].config(text='T', bg='black')
         else:
             self.buttons[row][col].config(text='_', bg='white')
 
@@ -88,8 +87,8 @@ class MinesweeperEditor:
 
         for r in range(self.rows):
             for c in range(self.cols):
-                if self.buttons[r][c]['text'] == 'B':
-                    self.board[r][c] = 'B'
+                if self.buttons[r][c]['text'] == 'T':
+                    self.board[r][c] = 'T'
         
         self.calculate_numbers()
 
@@ -108,24 +107,24 @@ class MinesweeperEditor:
         # Calculate
         for r in range(self.rows):
             for c in range(self.cols):
-                if self.board[r][c] != 'B':
+                if self.board[r][c] != 'T':
                     count = 0
                     for dr in [-1, 0, 1]:
                         for dc in [-1, 0, 1]:
                             nr, nc = r + dr, c + dc
-                            if 0 <= nr < self.rows and 0 <= nc < self.cols and self.board[nr][nc] == 'B':
+                            if 0 <= nr < self.rows and 0 <= nc < self.cols and self.board[nr][nc] == 'T':
                                 count += 1
                     self.board[r][c] = str(count)
         
         # Encode the board
         for r in range(self.rows):
             for c in range(self.cols):
-                if self.board[r][c] == 'B' or self.board[r][c] == '0':
+                if self.board[r][c] == 'T' or self.board[r][c] == '0':
                     self.board[r][c] = '_'       
 
 def main():
     root = tk.Tk()
-    root.title('Minesweeper Map Editor')
+    root.title('GemHunter Map Editor')
 
     editor = MinesweeperEditor(root)
 
