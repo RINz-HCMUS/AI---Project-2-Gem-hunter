@@ -156,7 +156,7 @@ class GUI:
 
         # Solve SAT with Pysat Library
         self.start_time = datetime.now()  # Save the start time
-        self.output_grid = Pysat_Solution(self.grid, self.size)
+        self.output_grid = Optimal_Algorithm_Solution(self.grid, self.size)
         self.update_timer()
 
         # Write the result to output file
@@ -323,8 +323,9 @@ class GUI:
         # Display list of maps
         distance = 0
         for map_name in maps:
+            map_name_without_extension = map_name.split('.')[0]
             map_button = Button(self.window, font=("Courier New", 16, "bold"), bg="#192847", fg="white", 
-                                text=map_name, command=lambda  name=map_folder + "/" + map_name: self.select_map(name, map_name))
+                                text=map_name_without_extension, command=lambda  name=map_folder + "/" + map_name: self.select_map(name, map_name))
             map_button.place(x=370, y=200 + distance, width=350, height=50)
             distance += 60
 

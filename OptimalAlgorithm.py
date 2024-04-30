@@ -31,46 +31,6 @@ def output_for_algorithm_optimal(result, flat_grid, size):
             output_grid.append(row)
     return output_grid
 
-# Function to solve the Minesweeper game using the optimal algorithm
-def solve_with_optimal_algorithm(grid, size):
-    """
-    Solve the Minesweeper game using the optimal algorithm.
-
-    Args:
-        grid (list of lists): The grid representing the Minesweeper game.
-        size (tuple): The size of the grid.
-
-    Returns:
-        tuple: The satisfying assignment if found, None otherwise.
-    """
-    num_r, num_c = size
-    clauses = [generate_CNF((r, c), grid, size) for r in range(num_r) for c in range(num_c)]
-    flat_grid = [item for sublist in grid for item in sublist]
-    num_variables = num_r * num_c
-
-    # Flatten the list of clauses
-    clauses = [clause for sublist in clauses for clause in sublist]
-    result = solve_SAT(num_variables, clauses)
-    return result, flat_grid
-
-# Function to solve the SAT problem
-def solve_SAT(num_variables, clauses):
-    """
-    Solve the SAT problem.
-
-    Args:
-        num_variables (int): The number of variables.
-        clauses (list of lists): The CNF clauses.
-
-    Returns:
-        dict or None: The satisfying assignment if found, None otherwise.
-    """
-    variables = set(abs(literal) for clause in clauses for literal in clause)
-    variables = list(variables)
-    assignment = {}
-
-    return SAT_solver(variables, clauses, assignment)
-
 # Function to perform SAT solving using backtracking
 def SAT_solver(variables, clauses, assignment):
     """
