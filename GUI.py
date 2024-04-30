@@ -1,11 +1,11 @@
+import os
+import time
 from tkinter import*
+from datetime import datetime
 from OptimalAlgorithm import*
 from PysatSupport import*
 from Backtracking import*
 from Brute_Force import*
-import os
-import time
-from datetime import datetime
 
 class GUI:
     def __init__(self, window):
@@ -123,6 +123,7 @@ class GUI:
         
     def menu_button(self):
         self.window.destroy()
+        self = None
         main()
 
     def update_timer(self):
@@ -134,6 +135,7 @@ class GUI:
 
     def board_solved(self):
         # Xóa các vị trí cũ
+        self.button_solve.place_forget()
         for element in self.box_maps:
             element.place_forget()
         self.box_maps.clear
@@ -150,15 +152,17 @@ class GUI:
         if self.output_grid is not None:
             for i in range(row):
                 for j in range(col):
+                    # Màu mặc định
                     color_text = "white"
-                    if (isinstance(self.output_grid[i][j], int)):
-                        color = "#506465"
-                    elif(self.output_grid[i][j] == "G") : 
+                    color = "#506465"
+
+                    # Tô màu khác biệt cho mỗi ô Gem và Trap
+                    if(self.output_grid[i][j] == "G") : 
                         color, color_text = "#5FCAD8", "#547FAF"
                     elif(self.output_grid[i][j] == "T") : 
                         color = "#EF6C62"
 
-                    # Tạo label cho ô vuông với nền màu xám và viền màu đen
+                    # Tạo label cho ô vuông
                     button = Button(self.window, font=("Courier New", 10, "bold"), text=str(self.output_grid[i][j]), bg=color, fg=color_text)
                     button.place(x=self.start_x + self.size_cell * j, y= self.start_y + self.size_cell * i, width=self.size_cell, height=self.size_cell)
                     self.box_maps.append(button)
@@ -166,7 +170,6 @@ class GUI:
         # Nếu không giải được kết quả
         else :
             print("No solution found.")
-
 
     def center_window(self, width, height):
         # Lấy chiều rộng và chiều cao của màn hình
