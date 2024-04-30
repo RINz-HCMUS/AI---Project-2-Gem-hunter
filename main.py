@@ -5,15 +5,15 @@ from Backtracking import*
 from Brute_Force import*
 
 def main():
-    #  Tạo cửa sổ bắt đầu
+    #  Create a window to start the game
     window = Tk()
     window.title("Gem Hunter")
-    # Gọi Class GUI
+    # Call the GUI class
     Gui = GUI(window)
 
-    # Gọi vòng lặp - vòng lặp này giúp cho cửa sổ được hiển thị liên tục
+    # Run the window loop to keep the window open
     window.mainloop()
 
-# Hàm main sẽ được gọi khi chạy chương trình
+# Run the main function
 if __name__ == "__main__":
     main()
