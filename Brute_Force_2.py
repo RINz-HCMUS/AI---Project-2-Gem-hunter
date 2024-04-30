@@ -10,10 +10,16 @@ def Brute_Force_Solution_2(grid, size):
 
     solution = generate_solution(Grid, size, first_unkown, True)
     if solution is not None and check_solution(solution, size):
+        print("Solution found")
+        for row in solution:
+            print(row)
         return solution
     
     solution = generate_solution(Grid, size, first_unkown, False)
     if solution is not None and check_solution(solution, size):
+        print("Solution found")
+        for row in solution:
+            print(row)
         return solution
     print("Non solution found")
     return None
@@ -24,7 +30,7 @@ def generate_solution(grid, size, first_unkown, state):
     rows, cols = size
     Grid = [[cell for cell in row] for row in grid]
     r, c = first_unkown
-    Grid[r][c] = 'T' if state else 'G'
+    Grid[r][c] = 'G' if state else 'T'
 
     # Tìm ô chưa xét tiếp theo
     next_unknown = None
