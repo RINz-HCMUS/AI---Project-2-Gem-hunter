@@ -1,96 +1,169 @@
 from itertools import combinations
 from PysatSupport import*
 
-def output_for_algorithm_optimal(result, flat_grid, size):
-    num_r, num_c = size
-    output_grid = []
-    if result is not None:
-        for i in range(num_r):
-            row = []
-            for j in range(num_c):
-                flat_index = i * num_c + j
-                if flat_grid[flat_index] != '_':
-                    row.append(flat_grid[flat_index])
-                else:
-                    variable = flat_index + 1
-                    if variable in result:
-                        row.append('T' if result[variable] else 'G')
-                    else:
-                        row.append('G')
-            output_grid.append(row)
-    return output_grid
-#  Thuật giải áp dụng backtracking thông thường
-def solve_with_optimal_algorithm(grid, size):
+# def output_for_algorithm_optimal(result, flat_grid, size):
+#     num_r, num_c = size
+#     output_grid = []
+#     if result is not None:
+#         for i in range(num_r):
+#             row = []
+#             for j in range(num_c):
+#                 flat_index = i * num_c + j
+#                 if flat_grid[flat_index] != '_':
+#                     row.append(flat_grid[flat_index])
+#                 else:
+#                     variable = flat_index + 1
+#                     if variable in result:
+#                         row.append('T' if result[variable] else 'G')
+#                     else:
+#                         row.append('G')
+#             output_grid.append(row)
+#     return output_grid
+# #  Thuật giải áp dụng backtracking thông thường
+# def solve_with_optimal_algorithm(grid, size):
+#     num_r, num_c = size
+#     clauses = [generate_CNF((r, c), grid, size) for r in range(num_r) for c in range(num_c)]
+#     flat_grid = [item for sublist in grid for item in sublist]
+#     num_variables = num_r * num_c
+
+#     # Flatten the list of clauses
+#     clauses = [clause for sublist in clauses for clause in sublist]
+#     result = solve_SAT(num_variables, clauses)
+#     return result, flat_grid
+
+# def solve_SAT(num_variables, clauses):
+#     variables = set(abs(literal) for clause in clauses for literal in clause)
+#     variables = list(variables)
+#     assignment = {}
+
+#     return SAT_solver(variables, clauses, assignment)
+
+# def SAT_solver(variables, clauses, assignment):
+#     if not clauses:
+#         return assignment
+    
+#     while clauses:
+#         unassigned_literal = None
+#         for clause in clauses:
+#             for literal in clause:
+#                 if literal not in assignment and -literal not in assignment:
+#                     unassigned_literal = literal
+#                     break
+#             if unassigned_literal is not None:
+#                 break
+        
+#         if unassigned_literal is None:
+#             return None
+        
+#         assignment[abs(unassigned_literal)] = unassigned_literal > 0
+#         new_clauses = simplify(clauses, unassigned_literal)
+#         result = SAT_solver(variables, new_clauses, assignment)
+#         if result is not None:
+#             return result
+        
+#         assignment.pop(abs(unassigned_literal))
+#         assignment[abs(unassigned_literal)] = not (unassigned_literal > 0)
+#         new_clauses = simplify(clauses, -unassigned_literal)
+#         result = SAT_solver(variables, new_clauses, assignment)
+#         if result is not None:
+#             return result
+        
+#         assignment.pop(abs(unassigned_literal))
+#         return None
+
+# def simplify(clauses, literal):
+#     new_clauses = set()
+#     for clause in clauses:
+#         if literal in clause:
+#             continue
+#         new_clause = frozenset(l for l in clause if -literal != l)
+#         if new_clause:
+#             new_clauses.add(new_clause)
+#     return new_clauses
+
+
+
+# # Áp dung Thuật toán Tối Ưu để giải bài toán SAT
+# def Optimal_Algorithm_Solution(grid, size):
+#     # Giải bài toán
+#     result, flat_grid = solve_with_optimal_algorithm(grid, size)
+
+#     # Xuất kết quả
+#     if result is not None:
+#         return output_for_algorithm_optimal(result, flat_grid, size)   
+#     else:
+#         print("No solution found.")
+#         return None
+
+def unit_propagation(clauses, assignment):
+    unit_clauses = [c for c in clauses if len(c) == 1]
+    while unit_clauses:
+        literal = unit_clauses[0][0]
+        assignment[abs(literal)] = literal > 0
+        clauses = [c for c in clauses if literal not in c]
+        unit_clauses = [c for c in clauses if len(c) == 1]
+    return clauses, assignment
+
+def get_decision_literal(assignment, unassigned_variables):
+    for var in unassigned_variables:
+        if var not in assignment and -var not in assignment:
+            return var
+    return None
+
+def find_conflict_clause(clauses, assignment):
+    for clause in clauses:
+        satisfied = False
+        for literal in clause:
+            if abs(literal) in assignment and (literal > 0) == assignment[abs(literal)]:
+                satisfied = True
+                break
+        if not satisfied:
+            return clause
+    return None
+
+def analyze_conflict(clauses, conflict_clause, assignment):
+    learned_clause = []
+    for literal in conflict_clause:
+        if abs(literal) not in assignment:
+            learned_clause.append(literal)
+    return learned_clause
+
+def CDCL(clauses):
+    assignment = {}  # Lưu trữ phân nhóm của biến (True/False)
+    decision_stack = []  # Ngăn xếp quyết định
+    unassigned_variables = set(abs(literal) for clause in clauses for literal in clause)
+    
+    while True:
+        clauses, assignment = unit_propagation(clauses, assignment)
+        decision_literal = get_decision_literal(assignment, unassigned_variables)
+        if decision_literal is None:
+            return assignment  # Tất cả các biến đã được gán, nên trả về phân nhóm
+        
+        decision_stack.append((decision_literal, assignment.copy()))
+        assignment[decision_literal] = True  # Thử gán biến là True
+        unassigned_variables.remove(decision_literal)
+        
+        while True:
+            clauses, assignment = unit_propagation(clauses, assignment)
+            conflict_clause = find_conflict_clause(clauses, assignment)
+            if conflict_clause is None:
+                break
+            learned_clause = analyze_conflict(clauses, conflict_clause, assignment)
+            if not learned_clause:
+                return None  # Không tìm thấy lời giải, bài toán không thể giải quyết
+            clauses.append(learned_clause)
+            assignment = {abs(literal): None for literal in learned_clause}
+        
+        assignment[decision_literal] = False  # Thử gán biến là False
+        unassigned_variables.remove(decision_literal)
+
+def Optimal_Algorithm_Solution(grid, size):
     num_r, num_c = size
     clauses = [generate_CNF((r, c), grid, size) for r in range(num_r) for c in range(num_c)]
-    flat_grid = [item for sublist in grid for item in sublist]
-    num_variables = num_r * num_c
-
-    # Flatten the list of clauses
-    clauses = [clause for sublist in clauses for clause in sublist]
-    result = solve_SAT(num_variables, clauses)
-    return result, flat_grid
-
-def solve_SAT(num_variables, clauses):
-    variables = set(abs(literal) for clause in clauses for literal in clause)
-    variables = list(variables)
-    assignment = {}
-
-    return SAT_solver(variables, clauses, assignment)
-
-def SAT_solver(variables, clauses, assignment):
-    if not clauses:
-        return assignment
-    
-    while clauses:
-        unassigned_literal = None
-        for clause in clauses:
-            for literal in clause:
-                if literal not in assignment and -literal not in assignment:
-                    unassigned_literal = literal
-                    break
-            if unassigned_literal is not None:
-                break
-        
-        if unassigned_literal is None:
-            return None
-        
-        assignment[abs(unassigned_literal)] = unassigned_literal > 0
-        new_clauses = simplify(clauses, unassigned_literal)
-        result = SAT_solver(variables, new_clauses, assignment)
-        if result is not None:
-            return result
-        
-        assignment.pop(abs(unassigned_literal))
-        assignment[abs(unassigned_literal)] = not (unassigned_literal > 0)
-        new_clauses = simplify(clauses, -unassigned_literal)
-        result = SAT_solver(variables, new_clauses, assignment)
-        if result is not None:
-            return result
-        
-        assignment.pop(abs(unassigned_literal))
-        return None
-
-def simplify(clauses, literal):
-    new_clauses = set()
-    for clause in clauses:
-        if literal in clause:
-            continue
-        new_clause = frozenset(l for l in clause if -literal != l)
-        if new_clause:
-            new_clauses.add(new_clause)
-    return new_clauses
-
-
-
-# Áp dung Thuật toán Tối Ưu để giải bài toán SAT
-def Optimal_Algorithm_Solution(grid, size):
-    # Giải bài toán
-    result, flat_grid = solve_with_optimal_algorithm(grid, size)
-
-    # Xuất kết quả
-    if result is not None:
-        return output_for_algorithm_optimal(result, flat_grid, size)   
+    flattened_clauses = [clause for sublist in clauses for clause in sublist]
+    assignment = CDCL(flattened_clauses)
+    if assignment is not None:
+        return ouput_for_pysat(assignment, grid, size)
     else:
         print("No solution found.")
         return None
